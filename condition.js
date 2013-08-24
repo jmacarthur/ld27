@@ -9,6 +9,7 @@ var playerImage;
 var userID=0;
 var shardID=0;
 var mode=0;
+var startFrame = 0;
 
 function pollForStart()
 {
@@ -38,6 +39,7 @@ function pollForStart()
     {
       console.log("Turn started. x="+x+", y="+y+", time="+time);
       mode = 1;
+      startFrame = frame;
     }
 }
 
@@ -114,7 +116,6 @@ function sendDataToServer()
 
 function canMove(x,y)
 {
-
     var startx = Math.floor(x/64);
     var endx = Math.floor((x+63)/64);
     var starty = Math.floor(y/64);
@@ -195,8 +196,14 @@ function drawRepeat() {
   }
   else
   {
-    animate();
-    draw();
+    if(frame-startFrame >= 500) {
+      sendDataToServer();
+    }
+    else
+    {
+      animate();
+      draw();
+    }
   }
   setTimeout('drawRepeat()',20);
 }
@@ -220,9 +227,6 @@ if (canvas.getContext('2d')) {
 	var c = event.keyCode;
         keysDown[c] = 1;
         console.log("Pressed key: "+c);
-	if(c==81) { // Quit
-	    sendDataToServer();
-	}
     };
 
     body.onkeyup = function (event) {
