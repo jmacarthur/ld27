@@ -3,6 +3,8 @@ use CGI;
 use Data::Dumper;
 use DBI;
 
+use utils;
+
 open STDERR, ">>errors" if $ENV{SERVER_SOFTWARE} =~ m/^mini_httpd/;
 
 my $dbh = DBI->connect("dbi:SQLite:../condition.sqlite","","");
@@ -33,14 +35,6 @@ sub countUsersInShard
         return $array[0];
     }
     warn "Can't count users in shard '$shardID'\n";
-}
-
-sub setShardUser
-{
-    my($shardID, $userID) = @_;
-    my $sth = $dbh->prepare("UPDATE shard SET nextuser=? WHERE shardid=?");
-    my $rh = $sth->execute($userID,$shardID);
-    print "Next user of shard $shardID has been set to $userID\n";
 }
 
 sub setShardStatus
@@ -78,7 +72,7 @@ else
     $shardID = $dbh->func('last_insert_rowid');
     print "You join new shard $shardID\n";
     addUserToShard($shardID, $userID);
-    setShardUser($shardID, $userID);
+    setShardUser($dbh, $shardID, $userID);
 }
 
 print "All done. Please poll shard $shardID\n";

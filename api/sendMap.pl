@@ -2,6 +2,8 @@
 use CGI;
 use Data::Dumper;
 use DBI;
+
+use utils;
 open STDERR, ">>errors" if $ENV{SERVER_SOFTWARE} =~ m/^mini_httpd/;
 
 my $dbh = DBI->connect("dbi:SQLite:../condition.sqlite","","");
@@ -79,16 +81,7 @@ else
     }
 }
 
-# This is duplicated in login.pl!
-sub setShardUser
-{
-    my($shardID, $userID) = @_;
-    my $sth = $dbh->prepare("UPDATE shard SET nextuser=? WHERE shardid=?");
-    my $rh = $sth->execute($userID,$shardID);
-    print "Next user of shard $shardID has been set to $userID\n";
-}
-
 # Now update it
-setShardUser($shardID, $nextUserID);
+setShardUser($dbh, $shardID, $nextUserID);
 
 # Job done

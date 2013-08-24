@@ -43,7 +43,6 @@ function pollForStart()
     }
 }
 
-
 function init() {
     x = 320-64;
     y = 320;
