@@ -21,6 +21,16 @@ function init() {
     request.open("GET", "data/map.txt",false); // Blocking
     request.send(null);
     console.log(request.responseText);
+
+    // Now parse that...
+    lineArray = request.responseText.split("\n");
+    for(var l = 0;l< lineArray.length; l++) {
+	line = lineArray[l];
+	charArray = line.split(",");
+	for(var c=0;c<charArray.length;c++) {
+	    mapArray[c][l] = parseInt(charArray[c]);
+	}
+    }
 }
 
 function animate() {
@@ -44,12 +54,17 @@ function draw() {
     ctx.fillRect(0,0,640,480);
     frame ++;
 
-    ctx.beginPath();
-    ctx.fillStyle = "#ff0000";  
-    ctx.arc(x,y,32,0,2*Math.PI,false);
-    ctx.fill();
+    // Draw the map
+    ctx.fillStyle="#ffffff";
+    for(var gx = 0;gx<8;gx++) {
+	for(var gy = 0; gy< 8; gy++) {
+	    if(mapArray[gx][gy]==1) {
+		ctx.fillRect(gx*64,gy*64,64,64)
+	    }
+	}
+    }
 
-    ctx.drawImage(playerImage, 32,32);
+    ctx.drawImage(playerImage, x,y);
 
 }
 
