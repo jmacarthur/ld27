@@ -5,9 +5,22 @@ var frame = 0;
 var keysDown = new Array();
 var x;
 var y;
+var playerImage;
+
 function init() {
-    x = 320
-    y = 240
+    x = 320;
+    y = 240;
+    playerImage = new Image();
+    playerImage.src = 'graphics/player.png';
+    mapArray = new Array(8);
+    for(var i=0;i<8;i++) {
+	mapArray[i] = new Array(8);
+    }
+    // Contact the server and get the map...
+    request = new XMLHttpRequest();
+    request.open("GET", "data/map.txt",false); // Blocking
+    request.send(null);
+    console.log(request.responseText);
 }
 
 function animate() {
@@ -35,6 +48,9 @@ function draw() {
     ctx.fillStyle = "#ff0000";  
     ctx.arc(x,y,32,0,2*Math.PI,false);
     ctx.fill();
+
+    ctx.drawImage(playerImage, 32,32);
+
 }
 
 
