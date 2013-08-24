@@ -1,0 +1,3 @@
+
+Server can be started with:
+mini-httpd -p 8080 -d . -c '**.pl'
