@@ -8,8 +8,8 @@ var y;
 var playerImage;
 
 function init() {
-    x = 320;
-    y = 240;
+    x = 320-64;
+    y = 320;
     playerImage = new Image();
     playerImage.src = 'graphics/player.png';
     mapArray = new Array(8);
@@ -33,20 +33,46 @@ function init() {
     }
 }
 
+function canMove(x,y)
+{
+
+    var startx = Math.floor(x/64);
+    var endx = Math.floor((x+63)/64);
+    var starty = Math.floor(y/64);
+    var endy = Math.floor((y+63)/64);
+    for(gx = startx; gx <= endx; gx++) {
+	for(gy = starty; gy <= endy; gy++) {
+	    if(mapArray[gx][gy]>0) {
+		return false;
+	    }
+	}
+    }
+    return true;
+}
+
 function animate() {
+    var dx = 0;
+    var dy = 0;
+    var speed = 4;
     if(keysDown[38]) {
-	y -= 1;
+	dy = -1;
     }
     else if(keysDown[40]) {
-	y += 1;
+	dy = 1;
     }
     if(keysDown[37]) {
-	x -= 1;
+	dx = -1;
     }
     else if(keysDown[39]) {
-	x += 1;
+	dx = 1;
     }
 
+    if(dx != 0 && canMove(x+dx*speed,y)) {
+	x += dx*speed;
+    }
+    if(dy != 0 && canMove(x,y+dy*speed)) {
+	y += dy*speed;
+    }
 }
 
 function draw() {
