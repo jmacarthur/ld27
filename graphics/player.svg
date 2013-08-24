@@ -9,12 +9,15 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="401"
+   height="401"
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="New document 1">
+   sodipodi:docname="player.svg"
+   inkscape:export-filename="/home/jimm/projects/ld27/graphics/player.png"
+   inkscape:export-xdpi="14.36"
+   inkscape:export-ydpi="14.36">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -25,8 +28,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="294.35848"
-     inkscape:cy="614.24103"
+     inkscape:cx="154.85848"
+     inkscape:cy="194.74103"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -34,10 +37,20 @@
      inkscape:window-height="750"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="1">
+     inkscape:window-maximized="1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
     <inkscape:grid
        type="xygrid"
-       id="grid2987" />
+       id="grid2987"
+       empspacing="5"
+       visible="true"
+       enabled="true"
+       snapvisiblegridlinesonly="true"
+       originx="-139.5px"
+       originy="-419.5px" />
   </sodipodi:namedview>
   <metadata
      id="metadata7">
@@ -54,7 +67,8 @@
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(-139.5,-231.86218)">
     <rect
        style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        id="rect2989"
@@ -71,7 +85,7 @@
        sodipodi:cy="302.36218"
        sodipodi:rx="40"
        sodipodi:ry="30"
-       d="m 380,302.36218 a 40,30 0 1 1 -80,0 40,30 0 1 1 80,0 z"
+       d="m 380,302.36218 c 0,16.56855 -17.90861,30 -40,30 -22.09139,0 -40,-13.43145 -40,-30 0,-16.56854 17.90861,-30 40,-30 22.09139,0 40,13.43146 40,30 z"
        transform="matrix(1,0,0,1.3367175,2.0203051,-111.91217)" />
     <rect
        style="fill:#ffffff;fill-opacity:1"
