@@ -8,5 +8,12 @@ sub setShardUser
     print "Next user of shard $shardID has been set to $userID\n";
 }
 
+sub touchTimeStamp
+{
+    my($dbh, $userID) = @_;
+    my $sth = $dbh->prepare("UPDATE userids SET lastseen=datetime('now') WHERE userid=?");
+    my $rh = $sth->execute($userID);
+}
+
 
 return 1;

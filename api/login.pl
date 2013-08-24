@@ -15,6 +15,7 @@ my $userID = $dbh->func('last_insert_rowid');
 my $q = CGI->new;
 print $q->header('text/plain');
 print "USERID: $userID\n";
+touchTimeStamp($dbh,$userID);
 
 sub addUserToShard
 {

@@ -2,6 +2,7 @@
 use CGI;
 use Data::Dumper;
 use DBI;
+use utils;
 
 # POST to this - user ID
 
@@ -77,6 +78,8 @@ if($shardID==0) {
     print "Either you don't exist, or you are not in a shard\n";
     exit(0);
 }
+
+touchTimeStamp($dbh,$userID);
 
 my $shardStatus = getShardStatus($shardID);
 if($shardStatus==0 || $shardStatus==1) {
