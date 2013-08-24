@@ -33,6 +33,17 @@ function init() {
     }
 }
 
+function sendDataToServer()
+{
+    // Contact the server and get the map...
+    request = new XMLHttpRequest();
+    request.open("POST", "api/sendMap.pl",false); // Blocking
+    var dataString = x+","+y;
+    request.send(dataString);
+    console.log("Data sent...");
+    console.log(request.responseText);
+}
+
 function canMove(x,y)
 {
 
@@ -120,6 +131,9 @@ if (canvas.getContext('2d')) {
 	var c = event.keyCode;
         keysDown[c] = 1;
         console.log("Pressed key: "+c);
+	if(c==81) { // Quit
+	    sendDataToServer();
+	}
     };
 
     body.onkeyup = function (event) {
