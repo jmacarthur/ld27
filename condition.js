@@ -6,6 +6,41 @@ var keysDown = new Array();
 var x;
 var y;
 var playerImage;
+var userID=0;
+var shardID=0;
+var mode=0;
+
+function pollForStart()
+{
+    request = new XMLHttpRequest();
+    console.log("Attempting to log in as user "+userID);
+    request.open("GET", "api/poll.pl?u="+userID,false); // Blocking
+    data = userID;
+    request.send(""+data);
+    console.log(request.responseText);
+    lineArray = request.responseText.split("\n");
+    time = -1;
+    for(var l = 0;l< lineArray.length; l++) {
+	line = lineArray[l];
+	if(line.substr(0,8)=="Coords: ") {
+          coordArray=line.match(/\d+/g);
+          x = parseInt(coordArray[0]);
+          y = parseInt(coordArray[1]);
+        }
+        else if(line.substr(0,6)=="Time: ") {
+          time = line.substr(6);
+        }
+    }
+    if(time==-1) {
+      console.log("Still waiting.");
+    }
+    else
+    {
+      console.log("Turn started. x="+x+", y="+y+", time="+time);
+      mode = 1;
+    }
+}
+
 
 function init() {
     x = 320-64;
@@ -31,17 +66,50 @@ function init() {
 	    mapArray[c][l] = parseInt(charArray[c]);
 	}
     }
+
+    request.open("GET", "api/login.pl",false); // Blocking
+    request.send(null);
+    console.log(request.responseText);
+
+    // Now parse that...
+    lineArray = request.responseText.split("\n");
+    for(var l = 0;l< lineArray.length; l++) {
+	line = lineArray[l];
+        console.log("Processing response line "+line.substr(0,7)+".");
+      
+        if(line.substr(0,8)=="USERID: ") {
+          userID = parseInt(line.substr(8));
+        }
+        if(line.substr(0,7)=="SHARD: ") {
+          shardID = parseInt(line.substr(7));
+        }
+    }
+    if(userID==0 || shardID==0) {
+      console.log("Login failed. (userID="+userID+", shardID="+shardID+")");
+      return false;
+    }
+    else
+    {
+      console.log("Login complete: UserID="+userID+", shard "+shardID);
+    }
+    mode = 0; // Default, we are waiting for our turn.
+    // Let's poll anyway
+    pollForStart();
+    return true;
 }
+
 
 function sendDataToServer()
 {
     // Contact the server and get the map...
     request = new XMLHttpRequest();
     request.open("POST", "api/sendMap.pl",false); // Blocking
-    var dataString = x+","+y;
+    var dataString = "Coords: "+x+","+y+"\n";
+    dataString += "UserID: "+userID+"\n";
     request.send(dataString);
     console.log("Data sent...");
     console.log(request.responseText);
+    mode = 0;
 }
 
 function canMove(x,y)
@@ -53,6 +121,9 @@ function canMove(x,y)
     var endy = Math.floor((y+63)/64);
     for(gx = startx; gx <= endx; gx++) {
 	for(gy = starty; gy <= endy; gy++) {
+          if(gx>=8 || gy>=8 || gx<0 || gy<0) {
+            return false;
+          }
 	    if(mapArray[gx][gy]>0) {
 		return false;
 	    }
@@ -77,7 +148,6 @@ function animate() {
     else if(keysDown[39]) {
 	dx = 1;
     }
-
     if(dx != 0 && canMove(x+dx*speed,y)) {
 	x += dx*speed;
     }
@@ -87,13 +157,12 @@ function animate() {
 }
 
 function draw() {
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0,0,640,480);
-    frame ++;
-
-    // Draw the map
-    ctx.fillStyle="#ffffff";
-    for(var gx = 0;gx<8;gx++) {
+  ctx.fillStyle = "#000000";
+  ctx.fillRect(0,0,640,480);
+  
+  // Draw the map
+  ctx.fillStyle="#ffffff";
+  for(var gx = 0;gx<8;gx++) {
 	for(var gy = 0; gy< 8; gy++) {
 	    if(mapArray[gx][gy]==1) {
 		ctx.fillRect(gx*64,gy*64,64,64)
@@ -105,11 +174,31 @@ function draw() {
 
 }
 
+function drawWaitScreen() {
+  ctx.fillStyle = "#404040";
+  ctx.fillRect(0,0,640,480);
+  
+}
+
+
 
 function drawRepeat() {
+  frame ++;
+
+  if(mode==0) {
+    // Waiting for our turn.
+    
+    drawWaitScreen();
+    if(frame % 50 ==0) {
+      pollForStart();
+    }
+  }
+  else
+  {
     animate();
     draw();
-    setTimeout('drawRepeat()',10);
+  }
+  setTimeout('drawRepeat()',20);
 }
 
 
@@ -144,8 +233,9 @@ if (canvas.getContext('2d')) {
     // Clear canvas
     ctx.fillStyle = "#000000";
     ctx.fillRect(0,0,640,480);
-    init();
-    drawRepeat();
+    if(init()) {      
+      drawRepeat();
+    }
 
     
 }

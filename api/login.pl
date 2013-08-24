@@ -61,9 +61,9 @@ sub setShardStatus
 my $sth = $dbh->prepare("select shardid from shard where status=0;");
 my $tuples = $sth->execute();
 my @array = $sth->fetchrow_array();
-
+my $shardID;
 if(@array > 0) {
-    my $shardID = $array[0];
+    $shardID = $array[0];
     addUserToShard($shardID, $userID);
     my $userCount = countUsersInShard($shardID);
     if($userCount >= 3) {
@@ -75,10 +75,11 @@ else
 {
     my $sth = $dbh->prepare("INSERT INTO shard (status,playerx,playery,time) VALUES (0,64,64,0);");
     my $rh = $sth->execute();
-    my $shardID = $dbh->func('last_insert_rowid');
+    $shardID = $dbh->func('last_insert_rowid');
     print "You join new shard $shardID\n";
     addUserToShard($shardID, $userID);
     setShardUser($shardID, $userID);
 }
 
-# That's done
+print "All done. Please poll shard $shardID\n";
+print "SHARD: $shardID\n";
