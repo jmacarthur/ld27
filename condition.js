@@ -5,11 +5,30 @@ var frame = 0;
 var keysDown = new Array();
 var x;
 var y;
+
 var playerImage;
+var keyImage;
+
 var userID=0;
 var shardID=0;
 var mode=0;
 var startFrame = 0;
+
+var imageArray;
+var inventory;
+
+var imageNumbers = {
+space:    0,
+wall:     1,
+key:      2,
+trousers: 3,
+shirt:    4
+};
+
+function isSolid(t) 
+{
+  return t==1;
+}
 
 function pollForStart()
 {
@@ -43,11 +62,27 @@ function pollForStart()
     }
 }
 
+function getImage(name)
+{
+  image = new Image();
+  image.src = 'graphics/'+name+'.png';
+  return image;
+}
+
+function loadImages(names)
+{
+  for(var n in names) {
+    imageMap[imageNumbers[names[n]]] = getImage(names[n]);
+  }
+}
+
 function init() {
     x = 320-64;
     y = 320;
-    playerImage = new Image();
-    playerImage.src = 'graphics/player.png';
+    inventory = new Array(4);
+    imageMap = new Array();
+    loadImages(['player','key','trousers','shirt']);
+
     mapArray = new Array(8);
     for(var i=0;i<8;i++) {
 	mapArray[i] = new Array(8);
@@ -124,12 +159,33 @@ function canMove(x,y)
           if(gx>=8 || gy>=8 || gx<0 || gy<0) {
             return false;
           }
-	    if(mapArray[gx][gy]>0) {
+          if(isSolid(mapArray[gx][gy])) {
 		return false;
 	    }
 	}
     }
     return true;
+}
+
+function addToInventory(i)
+{
+  // TODO
+}
+
+function attemptCollect(x,y)
+{
+    var startx = Math.floor(x/64);
+    var endx = Math.floor((x+63)/64);
+    var starty = Math.floor(y/64);
+    var endy = Math.floor((y+63)/64);
+    for(gx = startx; gx <= endx; gx++) {
+	for(gy = starty; gy <= endy; gy++) {
+          if(mapArray[gx][gy]==2) {
+            mapArray[gx][gy]=0;
+            addToInventory(2);
+          }
+        }
+    }
 }
 
 function animate() {
@@ -154,6 +210,7 @@ function animate() {
     if(dy != 0 && canMove(x,y+dy*speed)) {
 	y += dy*speed;
     }
+    attemptCollect(x,y);
 }
 
 function draw() {
@@ -165,12 +222,18 @@ function draw() {
   for(var gx = 0;gx<8;gx++) {
 	for(var gy = 0; gy< 8; gy++) {
 	    if(mapArray[gx][gy]==1) {
-		ctx.fillRect(gx*64,gy*64,64,64)
+              ctx.fillRect(gx*64,gy*64,64,64);
+	    }
+	    else if(mapArray[gx][gy]==0) {
+              // Does nothing
+	    }
+	    else {
+              ctx.drawImage(imageMap[mapArray[gx][gy]], gx*64,gy*64);
 	    }
 	}
     }
 
-    ctx.drawImage(playerImage, x,y);
+    ctx.drawImage(imageMap[imageNumbers['player']], x,y);
 
 }
 
