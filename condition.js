@@ -8,7 +8,7 @@ var y;
 
 var playerImage;
 var keyImage;
-
+var worldSize = 16;
 var userID=0;
 var shardID=0;
 var mode=0;
@@ -19,10 +19,11 @@ var inventory;
 
 var imageNumbers = {
 space:    0,
-brick:     1,
+brick:    1,
 key:      2,
 trousers: 3,
-shirt:    4
+shirt:    4,
+door:     5
 };
 
 function isSolid(t) 
@@ -84,11 +85,14 @@ function init() {
       inventory[i] = 0;
     }
     imageMap = new Array();
-    loadImages(['player','key','trousers','shirt', 'brick']);
+    loadImages(['player','key','trousers','shirt', 'brick', 'door']);
     
-    mapArray = new Array(8);
-    for(var i=0;i<8;i++) {
-	mapArray[i] = new Array(8);
+    mapArray = new Array(worldSize);
+    for(var i=0;i<worldSize;i++) {
+	mapArray[i] = new Array(worldSize);
+        for(var j=0;j<worldSize;j++) {
+          mapArray[i][j] = 0;
+        }
     }
     // Contact the server and get the map...
     request = new XMLHttpRequest();
@@ -101,9 +105,11 @@ function init() {
     for(var l = 0;l< lineArray.length; l++) {
 	line = lineArray[l];
 	charArray = line.split(",");
-	for(var c=0;c<charArray.length;c++) {
+        if(charArray.length>1) {
+          for(var c=0;c<charArray.length;c++) {
 	    mapArray[c][l] = parseInt(charArray[c]);
-	}
+          }
+        }
     }
 
     request.open("GET", "api/login.pl",false); // Blocking
@@ -159,7 +165,7 @@ function canMove(x,y)
     var endy = Math.floor((y+63)/64);
     for(gx = startx; gx <= endx; gx++) {
 	for(gy = starty; gy <= endy; gy++) {
-          if(gx>=8 || gy>=8 || gx<0 || gy<0) {
+          if(gx>=worldSize || gy>=worldSize || gx<0 || gy<0) {
             return false;
           }
           if(isSolid(mapArray[gx][gy])) {
@@ -228,20 +234,20 @@ function draw() {
   
   // Draw the map
   ctx.fillStyle="#ffffff";
-  for(var gx = 0;gx<8;gx++) {
-	for(var gy = 0; gy< 8; gy++) {
-	    if(mapArray[gx][gy]==0) {
-              // Does nothing
-	    }
-	    else {
-              ctx.drawImage(imageMap[mapArray[gx][gy]], gx*64,gy*64);
-	    }
-	}
+  for(var gx = 0;gx<worldSize;gx++) {
+    for(var gy = 0; gy< worldSize; gy++) {
+      if(mapArray[gx][gy]==0) {
+        // Does nothing
+      }
+      else {
+        ctx.drawImage(imageMap[mapArray[gx][gy]], gx*64,gy*64);
+      }
     }
-
+  }
+  
     for(var i = 0;i<4;i++) {
       if(inventory[i]!=0) {
-        ctx.drawImage(imageMap[inventory[i]], i*64,480);
+        ctx.drawImage(imageMap[inventory[i]], i*64,480-64);
       }
     }
     ctx.drawImage(imageMap[imageNumbers['player']], x,y);
