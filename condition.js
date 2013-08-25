@@ -19,6 +19,10 @@ var inventory;
 var playerFlags;
 var deathReason = "";
 var mapUpdates = "";
+var dragging = false;
+var holding=0;
+var mapOffsetX = 0;
+var mapOffsetY = 0;
 
 var imageNumbers = {
 space:    0,
@@ -32,12 +36,18 @@ inspector: 7,
 barista: 8,
 teller: 9,
 assistant: 10,
-
+idcard:11,
+coins:12,
+banknotes:13,
+coffee:14,
+ticket:15,
+ticketinspector:16,
 player: 128,
 player_trousers: 129,
 player_shirt: 130,
 player_dressed: 131,
-car: 132
+car: 132,
+carleft: 133
 };
 
 var gameModes = {
@@ -46,9 +56,23 @@ playing: 1,
 dead:    2
 };
 
+function inInventory(t)
+{
+  for(var i=0;i<4;i++) {
+    if(inventory[i]==t) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function isSolid(t) 
 {
-  return t==1 || (t==5 && (playerFlags & 3) != 3);
+  return t==1 || (t==5 && (playerFlags & 3) != 3)
+    || (t==6 && !inInventory(imageNumbers['key']))
+        || (t==7 && !inInventory(imageNumbers['idcard']))
+        || (t==16 && !inInventory(imageNumbers['ticket']))
+    || t==8 || t==9 ||t==10;
 }
 
 function pollForStart()
@@ -142,7 +166,9 @@ function init() {
     imageMap = new Array();
     loadImages(['player','key','trousers','shirt', 'brick', 'door',
                 'player_trousers','player_shirt','player_dressed',
-                'car','carleft']);
+                'car','carleft', 'assistant','teller','inspector',
+                'barista','lockeddoor', 'coins','banknotes','idcard',
+                'coffee','ticket','ticketinspector']);
     
     mapArray = new Array(worldSize);
     for(var i=0;i<worldSize;i++) {
@@ -254,6 +280,17 @@ function addToInventory(item)
   return false;
 }
 
+function removeFromInventory(item)
+{
+  for(var i=0;i<4;i++) {
+    if(inventory[i]==item) {
+      inventory[i]=0;
+      return;
+    }
+  }
+}
+
+
 function updateMap(gx,gy,val)
 {
   mapArray[gx][gy] = val;
@@ -268,17 +305,23 @@ function attemptCollect(x,y)
     var endy = Math.floor((y+63)/64);
     for(gx = startx; gx <= endx; gx++) {
 	for(gy = starty; gy <= endy; gy++) {
-          if(mapArray[gx][gy]==2) {
+          if(mapArray[gx][gy]==imageNumbers['key']) {
             updateMap(gx,gy,0);
             addToInventory(2);
           }
-          if(mapArray[gx][gy]==3) {
+          if(mapArray[gx][gy]==imageNumbers['trousers']) {
             updateMap(gx,gy,0);
             playerFlags |= 0x1;           
+            addToInventory(12);
           }
-          if(mapArray[gx][gy]==4) {
+          if(mapArray[gx][gy]==imageNumbers['shirt']) {
             updateMap(gx,gy,0);
             playerFlags |= 0x2;
+          }
+          if(mapArray[gx][gy]==imageNumbers['idcard']) {
+            updateMap(gx,gy,0);
+            playerFlags |= 0x2;
+            addToInventory(imageNumbers['idcard']);
           }
         }
     }
@@ -310,6 +353,26 @@ function animate() {
     attemptCollect(x,y);
 }
 
+function attemptDragDrop(gx,gy,thing)
+{
+  console.log("Attempt drop at "+gx+","+gy);
+  mapThing = mapArray[gx][gy];
+  if(thing==imageNumbers['coins'] && mapThing==imageNumbers['barista']) {
+    removeFromInventory(thing);
+    addToInventory(imageNumbers['coffee']);
+    return;
+  }
+  if(thing==imageNumbers['idcard'] && mapThing==imageNumbers['teller']) {
+    addToInventory(imageNumbers['banknotes']);
+    return;
+  }
+  if(thing==imageNumbers['banknotes'] && mapThing==imageNumbers['assistant']) {
+    removeFromInventory(thing);
+    addToInventory(imageNumbers['ticket']);
+    return;
+  }
+}
+
 function squaresCollide(x1,y1,x2,y2,xsize)
 {
   var dx = Math.abs(x1-x2);
@@ -333,8 +396,6 @@ function draw() {
   
   // Draw the map
   ctx.fillStyle="#ffffff";
-  mapOffsetX = 0;
-  mapOffsetY = 0;
   if(x>320) { mapOffsetX = x-320; }
   if(y>240) { mapOffsetY = y-240; }
   for(var gx = 0;gx<worldSize;gx++) {
@@ -439,6 +500,31 @@ if (canvas.getContext('2d')) {
 	var c = event.keyCode;
         keysDown[c] = 0;
     };
+
+    body.onmousedown = function(event) {
+      mousex = event.clientX - canvas.offsetLeft;
+      mousey = event.clientY - canvas.offsetTop;
+      if(mousey>(480-64) && mousey<480 && mousex<=(64*4)) 
+      {
+        dragging = true;
+        slot = Math.floor(mousex/64);
+        holding = inventory[slot];
+        console.log("Picked up "+holding);
+      }
+    }
+    body.onmouseup = function(event) {
+      if(dragging && holding!=0)
+      {
+        mousex = event.clientX - canvas.offsetLeft;
+        mousey = event.clientY - canvas.offsetTop;
+        console.log("Dropping "+holding+" at "+mousex+","+mousey);
+        gx = Math.floor((mousex+mapOffsetX)/64);
+        gy = Math.floor((mousey+mapOffsetY)/64);
+        attemptDragDrop(gx,gy,holding);
+      }
+      holding = 0;
+      dragging = false;
+    }
 
     // Clear canvas
     ctx.fillStyle = "#000000";
