@@ -16,6 +16,7 @@ var startFrame = 0;
 
 var imageArray;
 var inventory;
+var playerFlags;
 
 var imageNumbers = {
 space:    0,
@@ -23,12 +24,17 @@ brick:    1,
 key:      2,
 trousers: 3,
 shirt:    4,
-door:     5
+door:     5,
+
+player: 128,
+player_trousers: 129,
+player_shirt: 130,
+player_dressed: 131
 };
 
 function isSolid(t) 
 {
-  return t==1;
+  return t==1 || (t==5 && (playerFlags & 3) != 3);
 }
 
 function pollForStart()
@@ -85,7 +91,8 @@ function init() {
       inventory[i] = 0;
     }
     imageMap = new Array();
-    loadImages(['player','key','trousers','shirt', 'brick', 'door']);
+    loadImages(['player','key','trousers','shirt', 'brick', 'door',
+                'player_trousers','player_shirt','player_dressed']);
     
     mapArray = new Array(worldSize);
     for(var i=0;i<worldSize;i++) {
@@ -199,6 +206,14 @@ function attemptCollect(x,y)
             mapArray[gx][gy]=0;
             addToInventory(2);
           }
+          if(mapArray[gx][gy]==3) {
+            mapArray[gx][gy]=0;
+            playerFlags |= 0x1;           
+          }
+          if(mapArray[gx][gy]==4) {
+            mapArray[gx][gy]=0;
+            playerFlags |= 0x2;
+          }
         }
     }
 }
@@ -250,7 +265,8 @@ function draw() {
         ctx.drawImage(imageMap[inventory[i]], i*64,480-64);
       }
     }
-    ctx.drawImage(imageMap[imageNumbers['player']], x,y);
+    playerImageNo = imageNumbers['player']+(playerFlags & 3);
+    ctx.drawImage(imageMap[playerImageNo], x,y);
 
 }
 

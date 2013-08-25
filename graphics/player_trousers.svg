@@ -14,7 +14,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.2 r9819"
-   sodipodi:docname="player.svg"
+   sodipodi:docname="player-trousers.svg"
    inkscape:export-filename="/home/jimm/projects/ld27/graphics/player.png"
    inkscape:export-xdpi="14.36"
    inkscape:export-ydpi="14.36">
@@ -28,7 +28,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="154.85848"
+     inkscape:cx="28.429909"
      inkscape:cy="194.74103"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -37,7 +37,7 @@
      inkscape:window-height="1082"
      inkscape:window-x="0"
      inkscape:window-y="0"
-     inkscape:window-maximized="0"
+     inkscape:window-maximized="1"
      fit-margin-top="0"
      fit-margin-left="0"
      fit-margin-right="0"
@@ -60,7 +60,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -104,7 +104,7 @@
        y="332.36218"
        ry="16.249998" />
     <rect
-       style="fill:#ffffff;fill-opacity:1"
+       style="fill:#ffaaaa;fill-opacity:1"
        id="rect3767"
        width="50"
        height="178.22485"
@@ -112,7 +112,7 @@
        y="432.36218"
        ry="29.704142" />
     <rect
-       style="fill:#ffffff;fill-opacity:1"
+       style="fill:#ffaaaa;fill-opacity:1"
        id="rect3769"
        width="50"
        height="178.22485"
@@ -136,5 +136,14 @@
          style=""
          id="path4467" />
     </g>
+    <rect
+       style="fill:#ffaaaa;fill-opacity:1;stroke:none;stroke-width:17.71699999999999875;stroke-miterlimit:4;stroke-opacity:0.40000000000000002;stroke-dasharray:none"
+       id="rect4998"
+       width="110"
+       height="40"
+       x="150.5"
+       y="200.5"
+       transform="translate(139.5,231.86218)"
+       ry="0" />
   </g>
 </svg>
