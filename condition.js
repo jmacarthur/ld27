@@ -73,10 +73,17 @@ function pollForStart()
     }
     else
     {
-      console.log("Turn started. x="+x+", y="+y+", time="+time);
-      mode = 1;
-      startFrame = frame;
-      mapUpdates = "";
+      if(playerFlags & 4) {
+        console.log("Our game has been terminated.");
+        mode = 2;        
+      }
+      else
+      {
+        console.log("Turn started. x="+x+", y="+y+", time="+time);
+        mode = 1;
+        startFrame = frame;
+        mapUpdates = "";
+      }
     }
 }
 
@@ -275,6 +282,14 @@ function squaresCollide(x1,y1,x2,y2,xsize)
   return true;
 }
 
+function die(reason)
+{
+  playerFlags |= 4;
+  deathReason = reason;
+  sendDataToServer();
+  mode = 2;
+}
+
 function draw() {
   ctx.fillStyle = "#000000";
   ctx.fillRect(0,0,640,480);
@@ -311,15 +326,13 @@ function draw() {
       cary = 480+128;
       ctx.drawImage(imageMap[imageNumbers['car']], carx-mapOffsetX,cary-mapOffsetY);
       if(squaresCollide(carx,cary,x,y,48)) {
-        playerFlags |= 4;
-        deathReason = "Collided with a vehicle";
+        die("Collided with a vehicle");
       }
       carx = 1280-(c*256+(frame%64)*4);
       cary = 480+128+64;
       ctx.drawImage(imageMap[imageNumbers['carleft']], carx-mapOffsetX,cary-mapOffsetY);
       if(squaresCollide(carx,cary,x,y,48)) {
-        playerFlags |= 4;
-        deathReason = "Collided with a vehicle";
+        die("Collided with a vehicle");
       }
     }
 }
@@ -327,21 +340,16 @@ function draw() {
 function drawWaitScreen() {
   ctx.fillStyle = "#404040";
   ctx.fillRect(0,0,640,480);
-  
+  ctx.fillStyle = "#000000";
+  ctx.fillText("Asleep?",32,32);
 }
-
-
 
 function drawRepeat() {
   frame ++;
 
-  if(playerFlags & 4) {
-    mode=2;
-  }
-
   if(mode==0) {
     // Waiting for our turn.
-    
+  
     drawWaitScreen();
     if(frame % 50 ==0) {
       pollForStart();
@@ -361,6 +369,10 @@ function drawRepeat() {
   else if(mode==2) {
     ctx.fillStyle = "#800000";
     ctx.fillRect(0,0,640,480);
+
+    ctx.fillStyle = "#000000";
+    ctx.fillText("You failed to complete your day",32,32);
+    ctx.fillText(deathReason,32,64);
   }
   setTimeout('drawRepeat()',20);
 }
@@ -368,7 +380,7 @@ function drawRepeat() {
 
 if (canvas.getContext('2d')) {
     ctx = canvas.getContext('2d');
-
+    ctx.font="bold 32px Arial";
     body.onclick = function (event) {
 	// Does nothing
     }

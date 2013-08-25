@@ -22,6 +22,7 @@ my @lines = split(/^/,$data);
 my $userID = 0;
 my $xpos = 0;
 my $ypos = 0;
+my $flags = 0;
 for my $l(@lines) {
     if($l=~/^UserID: (\d+)/) {
         $userID = $1;
@@ -29,6 +30,9 @@ for my $l(@lines) {
     elsif($l=~/Coords: (\d+),(\d+)/) {
         $xpos = $1;
         $ypos = $2;
+    }
+    elsif($l=~/Flags: (\d+)/) {
+        $flags = $1;
     }
 }
 
@@ -56,8 +60,8 @@ my $time = getOldShardTime($shardID);
 $time += 10;
 print "Updating shard $shardID time to $time\n";
 # Set shard not in use
-my $sth = $dbh->prepare("UPDATE shard set inuse=0, playerx=?, playery=?, time=? WHERE shardid=?");
-my $rh = $sth->execute($xpos,$ypos,$time,$shardID);
+my $sth = $dbh->prepare("UPDATE shard set inuse=0, playerx=?, playery=?, time=?,flags=? WHERE shardid=?");
+my $rh = $sth->execute($xpos,$ypos,$time,$flags,$shardID);
 
 # Now get the next player.
 $sth = $dbh->prepare("SELECT userid FROM userids where shard=? AND userid>? ORDER BY userid ASC LIMIT 1");
