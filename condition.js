@@ -26,6 +26,9 @@ var mapOffsetY = 0;
 var gameMode = 0; // Simple mode...
 var halt=false;
 var originalMapData="";
+var deaths = 0;
+var wins = 0;
+var lastFetchStats = 0;
 var imageNumbers = {
 space:    0,
 brick:    1,
@@ -76,6 +79,26 @@ function isSolid(t)
         || (t==7 && !inInventory(imageNumbers['idcard']))
         || (t==16 && !inInventory(imageNumbers['ticket']))
     || t==8 || t==9 ||t==10;
+}
+
+function updateStats()
+{
+  request.open("GET", "api/getstats.pl?u="+userID,false); // Blocking
+  data = userID;
+  request.send(""+data);
+  console.log("Response received, text:");
+  console.log(request.responseText);
+  lineArray = request.responseText.split("\n");
+  for(var l = 0;l< lineArray.length; l++) {
+    line = lineArray[l];
+    if(line.substr(0,5)=="WON: ") {
+      wins = parseInt(line.substr(5));
+    }
+    if(line.substr(0,6)=="LOST: ") {
+      deaths = parseInt(line.substr(6));
+    }
+  }
+  lastFetchStats = frame;
 }
 
 function pollForStart()
@@ -272,6 +295,7 @@ function sendDataToServer()
     console.log("Data sent...");
     console.log(request.responseText);
     mode = 0;
+    updateStats();
 }
 
 function canMove(x,y)
@@ -497,6 +521,17 @@ function drawWaitScreen() {
   ctx.fillText("Asleep?",32,32);
 }
 
+function drawStats()
+{
+  if((frame - lastFetchStats)>250) {
+    updateStats();
+  }
+  ctx.fillStyle = "#000000";
+  ctx.fillText("You have contributed to:",32,320);
+  ctx.fillText(wins+" successful days and",32,320+32);
+  ctx.fillText(deaths+" unsuccessful days",32,320+64);
+}
+
 function drawRepeat() {
   frame ++;
 
@@ -530,6 +565,8 @@ function drawRepeat() {
     ctx.fillStyle = "#000000";
     ctx.fillText("You failed to complete your day",32,32);
     ctx.fillText(deathReason,32,64);
+    ctx.fillText("Press space to continue",32,128);
+    drawStats();
   }
   else if(mode==3) {
     ctx.fillStyle = "#008000";
@@ -537,13 +574,15 @@ function drawRepeat() {
 
     ctx.fillStyle = "#000000";
     ctx.fillText("You caught the boat",32,32);
+    ctx.fillText("Press space to continue",32,128);
+    drawStats();
   }
   else if(mode==4) {
     // Title screen / not connecting
     drawWaitScreen();
     ctx.fillStyle = "#000000";
-    ctx.fillText("Game paused, press space to start.",32,32); 
-    ctx.fillText("Stats go here.",32,64); 
+    ctx.fillText("Game paused, press space to start.",32,128); 
+    drawStats();
   }
   setTimeout('drawRepeat()',20);
 }
