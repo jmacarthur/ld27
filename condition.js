@@ -8,7 +8,7 @@ var y;
 
 var playerImage;
 var keyImage;
-var worldSize = 16;
+var worldSize = 20;
 var userID=0;
 var shardID=0;
 var mode=0;
@@ -27,6 +27,11 @@ key:      2,
 trousers: 3,
 shirt:    4,
 door:     5,
+lockeddoor: 6,
+inspector: 7,
+barista: 8,
+teller: 9,
+assistant: 10,
 
 player: 128,
 player_trousers: 129,
