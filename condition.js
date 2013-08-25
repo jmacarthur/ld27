@@ -249,13 +249,17 @@ function draw() {
   
   // Draw the map
   ctx.fillStyle="#ffffff";
+  mapOffsetX = 0;
+  mapOffsetY = 0;
+  if(x>320) { mapOffsetX = x-320; }
+  if(y>240) { mapOffsetY = y-240; }
   for(var gx = 0;gx<worldSize;gx++) {
     for(var gy = 0; gy< worldSize; gy++) {
       if(mapArray[gx][gy]==0) {
         // Does nothing
       }
       else {
-        ctx.drawImage(imageMap[mapArray[gx][gy]], gx*64,gy*64);
+        ctx.drawImage(imageMap[mapArray[gx][gy]], gx*64-mapOffsetX,gy*64-mapOffsetY);
       }
     }
   }
@@ -266,7 +270,7 @@ function draw() {
       }
     }
     playerImageNo = imageNumbers['player']+(playerFlags & 3);
-    ctx.drawImage(imageMap[playerImageNo], x,y);
+    ctx.drawImage(imageMap[playerImageNo], x-mapOffsetX,y-mapOffsetY);
 
 }
 
