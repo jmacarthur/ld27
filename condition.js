@@ -357,6 +357,14 @@ function attemptDragDrop(gx,gy,thing)
 {
   console.log("Attempt drop at "+gx+","+gy);
   mapThing = mapArray[gx][gy];
+  // Dest can't be too far away
+  dx = (gx*64-x);
+  dy = (gy*64-y);
+  dist = dx*dx+dy*dy;
+  if(dist > (128*128)) {
+    console.log("Too far away.");
+    return;
+  }
   if(thing==imageNumbers['coins'] && mapThing==imageNumbers['barista']) {
     removeFromInventory(thing);
     addToInventory(imageNumbers['coffee']);
@@ -408,31 +416,33 @@ function draw() {
       }
     }
   }
-  
-    for(var i = 0;i<4;i++) {
-      if(inventory[i]!=0) {
-        ctx.drawImage(imageMap[inventory[i]], i*64,480-64);
-      }
-    }
+
     playerImageNo = imageNumbers['player']+(playerFlags & 3);
     ctx.drawImage(imageMap[playerImageNo], x-mapOffsetX,y-mapOffsetY);
 
     // Draw cars
     // This also check for collisions
     for(c=0;c<4;c++) {
-      carx = c*256+(frame%64)*4;
+      carx = c*320+(frame%80)*4;
       cary = 480+128;
       ctx.drawImage(imageMap[imageNumbers['car']], carx-mapOffsetX,cary-mapOffsetY);
       if(squaresCollide(carx,cary,x,y,48)) {
         die("Collided with a vehicle");
       }
-      carx = 1280-(c*256+(frame%64)*4);
+      carx = (64*worldSize)-(c*320+(frame%80)*4);
       cary = 480+128+64;
       ctx.drawImage(imageMap[imageNumbers['carleft']], carx-mapOffsetX,cary-mapOffsetY);
       if(squaresCollide(carx,cary,x,y,48)) {
         die("Collided with a vehicle");
       }
     }
+  
+    for(var i = 0;i<4;i++) {
+      if(inventory[i]!=0) {
+        ctx.drawImage(imageMap[inventory[i]], i*64,480-64);
+      }
+    }
+
 }
 
 function drawWaitScreen() {
