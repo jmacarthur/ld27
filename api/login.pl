@@ -68,9 +68,7 @@ if(@array > 0) {
 }
 else
 {
-    my $sth = $dbh->prepare("INSERT INTO shard (status,playerx,playery,time,mapUpdates,inventory) VALUES (0,64,64,0,'','0,0,0,0');");
-    my $rh = $sth->execute();
-    $shardID = $dbh->func('last_insert_rowid');
+    my $shardID = newShard($sbh);
     print "You join new shard $shardID\n";
     addUserToShard($shardID, $userID);
     setShardUser($dbh, $shardID, $userID);

@@ -25,6 +25,7 @@ my $ypos = 0;
 my $flags = 0;
 my $mapUpdates = "";
 my $inventory = "";
+my $shardID=1;
 for my $l(@lines) {
     if($l=~/^UserID: (\d+)/) {
         $userID = $1;
@@ -35,6 +36,9 @@ for my $l(@lines) {
     }
     elsif($l=~/Flags: (\d+)/) {
         $flags = $1;
+    }
+    elsif($l=~/Shard: (\d+)/) { # You should disable this in advanced mode
+        $shardID= $1;
     }
     elsif($l=~/MapUpdate: (\d+),(\d+),(\d+)/) {
         $mapUpdates .= ":$1x$2x$3";
@@ -85,8 +89,10 @@ sub setInventory
     $rh = $sth->execute($inventory,$shardID);
 }
 
+if($shardID==-1) {
+    $shardID = getUserShard($userID);
+}
 
-my $shardID = getUserShard($userID);
 print "Shard ID of user $userID is $shardID\n";
 my $time = getOldShardTime($shardID);
 $time += 10;
@@ -105,7 +111,13 @@ setMapUpdates($shardID,$oldMapUpdates . $mapUpdates);
 my $sth = $dbh->prepare("UPDATE shard set inuse=0, playerx=?, playery=?, time=?,flags=? WHERE shardid=?");
 my $rh = $sth->execute($xpos,$ypos,$time,$flags,$shardID);
 
-# Now get the next player.
+if($flags & 4) {
+    my $sth = $dbh->prepare("UPDATE shard set status=3 WHERE shardid=?");
+    my $rh = $sth->execute($shardID);
+}
+
+
+# Now get the next player. This gets ignored in simple mode.
 $sth = $dbh->prepare("SELECT userid FROM userids where shard=? AND userid>? ORDER BY userid ASC LIMIT 1");
 $rh = $sth->execute($shardID, $userID);
 my @array = $sth->fetchrow_array();

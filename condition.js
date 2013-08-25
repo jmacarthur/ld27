@@ -23,7 +23,9 @@ var dragging = false;
 var holding=0;
 var mapOffsetX = 0;
 var mapOffsetY = 0;
-
+var gameMode = 0; // Simple mode...
+var halt=false;
+var originalMapData="";
 var imageNumbers = {
 space:    0,
 brick:    1,
@@ -79,9 +81,16 @@ function pollForStart()
 {
     request = new XMLHttpRequest();
     console.log("Attempting to log in as user "+userID);
-    request.open("GET", "api/poll.pl?u="+userID,false); // Blocking
+    if(gameMode==1) {
+      request.open("GET", "api/poll.pl?u="+userID,false); // Blocking
+    }
+    else
+    {
+      request.open("GET", "api/poll_simple.pl?u="+userID,false); // Blocking
+    }
     data = userID;
     request.send(""+data);
+    console.log("Response received, text:");
     console.log(request.responseText);
     lineArray = request.responseText.split("\n");
     time = -1;
@@ -102,6 +111,9 @@ function pollForStart()
         }
         else if(line.substr(0,11)=="Inventory: ") {
           inventoryString=line.substr(11);
+        }
+        else if(line.substr(0,7)=="Shard: ") {          
+          shardID=parseInt(line.substr(7));
         }
         else if(line.substr(0,12)=="MapUpdates: ") {
           mapUpdatesCompressed = line.substr(12);
@@ -124,6 +136,7 @@ function pollForStart()
         startFrame = frame;
         inventory = inventoryString.split(",");
         // Parse the previous map updates...
+        readMap(originalMapData);
         if(mapUpdatesCompressed != "") {
           console.log("Processing compressed update "+mapUpdatesCompressed);
           updateArray = mapUpdatesCompressed.split(":");
@@ -156,6 +169,21 @@ function loadImages(names)
   }
 }
 
+function readMap(text)
+{
+  // Now parse that...
+  lineArray = text.split("\n");
+  for(var l = 0;l< lineArray.length; l++) {
+    line = lineArray[l];
+    charArray = line.split(",");
+    if(charArray.length>1) {
+      for(var c=0;c<charArray.length;c++) {
+        mapArray[c][l] = parseInt(charArray[c]);
+      }
+    }
+  }
+}
+
 function init() {
     x = 320-64;
     y = 320;
@@ -181,21 +209,17 @@ function init() {
     request = new XMLHttpRequest();
     request.open("GET", "data/map.txt",false); // Blocking
     request.send(null);
-    console.log(request.responseText);
+    originalMapData = request.responseText;
 
-    // Now parse that...
-    lineArray = request.responseText.split("\n");
-    for(var l = 0;l< lineArray.length; l++) {
-	line = lineArray[l];
-	charArray = line.split(",");
-        if(charArray.length>1) {
-          for(var c=0;c<charArray.length;c++) {
-	    mapArray[c][l] = parseInt(charArray[c]);
-          }
-        }
+    readMap(originalMapData);
+
+    if(gameMode==1) {
+      request.open("GET", "api/login.pl",false); // Blocking
     }
-
-    request.open("GET", "api/login.pl",false); // Blocking
+    else
+    {
+      request.open("GET", "api/login_simple.pl",false); // Blocking
+    }
     request.send(null);
     console.log(request.responseText);
 
@@ -210,7 +234,7 @@ function init() {
           shardID = parseInt(line.substr(7));
         }
     }
-    if(userID==0 || shardID==0) {
+    if(userID==0 || (shardID==0 && gameMode==1)) {
       console.log("Login failed. (userID="+userID+", shardID="+shardID+")");
       return false;
     }
@@ -242,6 +266,7 @@ function sendDataToServer()
     var dataString = "Coords: "+x+","+y+"\n";
     dataString += "UserID: "+userID+"\n";
     dataString += "Flags: "+playerFlags+"\n";
+    dataString += "Shard: "+shardID+"\n";
     dataString += "Inventory: "+formatInventory()+"\n";
     dataString += mapUpdates;
     request.send(dataString);
@@ -443,6 +468,11 @@ function draw() {
       }
     }
 
+    // Debug
+  ctx.fillStyle = "#000000";
+  ctx.fillText("Shard "+shardID,32,32);
+    
+
 }
 
 function drawWaitScreen() {
@@ -454,7 +484,10 @@ function drawWaitScreen() {
 
 function drawRepeat() {
   frame ++;
-
+  if(halt) {
+    console.log("Exiting drawRepeat loop");
+    return;
+  }
   if(mode==0) {
     // Waiting for our turn.
   
@@ -504,6 +537,9 @@ if (canvas.getContext('2d')) {
 	var c = event.keyCode;
         keysDown[c] = 1;
         console.log("Pressed key: "+c);
+        if(c==81) {
+          halt = true;
+        }
     };
 
     body.onkeyup = function (event) {

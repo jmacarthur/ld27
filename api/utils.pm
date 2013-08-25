@@ -15,5 +15,25 @@ sub touchTimeStamp
     my $rh = $sth->execute($userID);
 }
 
+sub getShardStatus
+{
+    my ($dbh,$shardID) = @_;
+    my $sth = $dbh->prepare("SELECT status from shard where shardid=?");
+    my $rh = $sth->execute($shardID);
+    my @array = $sth->fetchrow_array();
+    if(@array>0) {
+        return $array[0];
+    }
+    return -1;
+}
+
+sub newShard
+{
+    my $dbh = shift;
+    my $sth = $dbh->prepare("INSERT INTO shard (status,playerx,playery,time,mapUpdates,inventory) VALUES (0,64,64,0,'','0,0,0,0');");
+    my $rh = $sth->execute();
+    $shardID = $dbh->func('last_insert_rowid');
+    return $shardID;
+}
 
 return 1;

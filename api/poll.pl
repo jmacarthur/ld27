@@ -32,18 +32,6 @@ sub getUserShard
     return 0;
 }
 
-sub getShardStatus
-{
-    my $shardID = shift;
-    my $sth = $dbh->prepare("SELECT status from shard where shardid=?");
-    my $rh = $sth->execute($shardID);
-    my @array = $sth->fetchrow_array();
-    if(@array>0) {
-        return $array[0];
-    }
-    return -1;
-}
-
 sub getShardUser
 {
     my $shardID = shift;
@@ -84,7 +72,7 @@ if($shardID==0) {
 
 touchTimeStamp($dbh,$userID);
 
-my $shardStatus = getShardStatus($shardID);
+my $shardStatus = getShardStatus($dbh,$shardID);
 if($shardStatus==0 || $shardStatus==1) {
     my $currentUser = getShardUser($shardID);
     if($currentUser == $userID) {
