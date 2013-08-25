@@ -29,7 +29,8 @@ door:     5,
 player: 128,
 player_trousers: 129,
 player_shirt: 130,
-player_dressed: 131
+player_dressed: 131,
+car: 132
 };
 
 function isSolid(t) 
@@ -92,7 +93,8 @@ function init() {
     }
     imageMap = new Array();
     loadImages(['player','key','trousers','shirt', 'brick', 'door',
-                'player_trousers','player_shirt','player_dressed']);
+                'player_trousers','player_shirt','player_dressed',
+                'car','carleft']);
     
     mapArray = new Array(worldSize);
     for(var i=0;i<worldSize;i++) {
@@ -272,6 +274,15 @@ function draw() {
     playerImageNo = imageNumbers['player']+(playerFlags & 3);
     ctx.drawImage(imageMap[playerImageNo], x-mapOffsetX,y-mapOffsetY);
 
+    // Draw cars
+    for(c=0;c<4;c++) {
+      carx = c*256+(frame%64)*4;
+      cary = 480+128;
+      ctx.drawImage(imageMap[imageNumbers['car']], carx-mapOffsetX,cary-mapOffsetY);
+      carx = 640-(c*256+(frame%64)*4);
+      cary = 480+128+64;
+      ctx.drawImage(imageMap[imageNumbers['carleft']], carx-mapOffsetX,cary-mapOffsetY);
+    }
 }
 
 function drawWaitScreen() {

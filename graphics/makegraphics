@@ -1,3 +1,5 @@
 #!/bin/sh
 for i in *.svg; do convert -background transparent $i -resize 64x64 `basename -s .svg $i`.png
 done
+cp car.png carleft.png
+mogrify -flop carleft.png
