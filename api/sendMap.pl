@@ -24,6 +24,7 @@ my $xpos = 0;
 my $ypos = 0;
 my $flags = 0;
 my $mapUpdates = "";
+my $inventory = "";
 for my $l(@lines) {
     if($l=~/^UserID: (\d+)/) {
         $userID = $1;
@@ -37,6 +38,9 @@ for my $l(@lines) {
     }
     elsif($l=~/MapUpdate: (\d+),(\d+),(\d+)/) {
         $mapUpdates .= ":$1x$2x$3";
+    }
+    elsif($l=~/Inventory: ([0-9,]+)/) {
+        $inventory = $1;
     }
 }
 
@@ -74,14 +78,27 @@ sub setMapUpdates
     $rh = $sth->execute($mapUpdates,$shardID);
 }
 
+sub setInventory
+{
+    my ($shardID,$inventory) = @_;    
+    $sth = $dbh->prepare("UPDATE shard set inventory=? where shardid=?");
+    $rh = $sth->execute($inventory,$shardID);
+}
+
+
 my $shardID = getUserShard($userID);
 print "Shard ID of user $userID is $shardID\n";
 my $time = getOldShardTime($shardID);
 $time += 10;
 print "Updating shard $shardID time to $time\n";
 
+setInventory($shardID, $inventory);
+
 print "Processing your map updates ".$mapUpdates."\n";
 my $oldMapUpdates = getMapUpdates($shardID);
+# TODO: 
+# At this point we should check $oldMapUpdates.$mapUpdates for
+# duplicates and condense it.
 setMapUpdates($shardID,$oldMapUpdates . $mapUpdates);
 
 # Set shard not in use

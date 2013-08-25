@@ -63,7 +63,7 @@ sub sendStartupInfo
     # Need an 'in use' flag.
     my $sth = $dbh->prepare("UPDATE shard set inuse=1 WHERE shardid=?");
     my $rh = $sth->execute($shardID);
-    $sth = $dbh->prepare("SELECT playerx,playery,time,flags,mapUpdates FROM shard where shardid=?");
+    $sth = $dbh->prepare("SELECT playerx,playery,time,flags,mapUpdates,inventory FROM shard where shardid=?");
     $rh = $sth->execute($shardID);
     my @array=$sth->fetchrow_array();
     print "BEGIN\n";
@@ -71,6 +71,7 @@ sub sendStartupInfo
     print "Time: $array[2]\n";
     print "Flags: $array[3]\n";
     print "MapUpdates: $array[4]\n";
+    print "Inventory: $array[5]\n";
     print "Commence playing.\n";
 }
 

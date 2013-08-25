@@ -57,6 +57,7 @@ function pollForStart()
     lineArray = request.responseText.split("\n");
     time = -1;
     mapUpdatesCompressed = "";
+    inventoryString="0,0,0,0";
     for(var l = 0;l< lineArray.length; l++) {
 	line = lineArray[l];
 	if(line.substr(0,8)=="Coords: ") {
@@ -69,6 +70,9 @@ function pollForStart()
         }
         else if(line.substr(0,7)=="Flags: ") {
           playerFlags = parseInt(line.substr(7));
+        }
+        else if(line.substr(0,11)=="Inventory: ") {
+          inventoryString=line.substr(11);
         }
         else if(line.substr(0,12)=="MapUpdates: ") {
           mapUpdatesCompressed = line.substr(12);
@@ -89,6 +93,7 @@ function pollForStart()
         console.log("Turn started. x="+x+", y="+y+", time="+time);
         mode = 1;
         startFrame = frame;
+        inventory = inventoryString.split(",");
         // Parse the previous map updates...
         if(mapUpdatesCompressed != "") {
           console.log("Processing compressed update "+mapUpdatesCompressed);
@@ -189,6 +194,15 @@ function init() {
 }
 
 
+function formatInventory()
+{
+  var invString=""+inventory[0];
+  for(var i=1;i<4;i++) {
+    invString+=","+inventory[i];
+  }
+  return invString;
+}
+
 function sendDataToServer()
 {
     // Contact the server and get the map...
@@ -197,6 +211,7 @@ function sendDataToServer()
     var dataString = "Coords: "+x+","+y+"\n";
     dataString += "UserID: "+userID+"\n";
     dataString += "Flags: "+playerFlags+"\n";
+    dataString += "Inventory: "+formatInventory()+"\n";
     dataString += mapUpdates;
     request.send(dataString);
     console.log("Data sent...");
