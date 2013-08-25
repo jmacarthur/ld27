@@ -23,6 +23,7 @@ my $userID = 0;
 my $xpos = 0;
 my $ypos = 0;
 my $flags = 0;
+my $mapUpdates = "";
 for my $l(@lines) {
     if($l=~/^UserID: (\d+)/) {
         $userID = $1;
@@ -33,6 +34,9 @@ for my $l(@lines) {
     }
     elsif($l=~/Flags: (\d+)/) {
         $flags = $1;
+    }
+    elsif($l=~/MapUpdate: (\d+),(\d+),(\d+)/) {
+        $mapUpdates .= ":$1x$2x$3";
     }
 }
 
@@ -54,11 +58,32 @@ sub getOldShardTime
     return $array[0];
 }
 
+sub getMapUpdates
+{
+    my $shardID = shift;    
+    $sth = $dbh->prepare("SELECT mapUpdates FROM shard where shardid=?");
+    $rh = $sth->execute($shardID);
+    my @array=$sth->fetchrow_array();
+    return $array[0];
+}
+
+sub setMapUpdates
+{
+    my ($shardID,$mapUpdates) = @_;    
+    $sth = $dbh->prepare("UPDATE shard set mapUpdates=? where shardid=?");
+    $rh = $sth->execute($mapUpdates,$shardID);
+}
+
 my $shardID = getUserShard($userID);
 print "Shard ID of user $userID is $shardID\n";
 my $time = getOldShardTime($shardID);
 $time += 10;
 print "Updating shard $shardID time to $time\n";
+
+print "Processing your map updates ".$mapUpdates."\n";
+my $oldMapUpdates = getMapUpdates($shardID);
+setMapUpdates($shardID,$oldMapUpdates . $mapUpdates);
+
 # Set shard not in use
 my $sth = $dbh->prepare("UPDATE shard set inuse=0, playerx=?, playery=?, time=?,flags=? WHERE shardid=?");
 my $rh = $sth->execute($xpos,$ypos,$time,$flags,$shardID);

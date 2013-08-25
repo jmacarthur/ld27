@@ -17,7 +17,9 @@ var startFrame = 0;
 var imageArray;
 var inventory;
 var playerFlags;
-var deathdReason = "";
+var deathReason = "";
+var mapUpdates = "";
+
 var imageNumbers = {
 space:    0,
 brick:    1,
@@ -54,6 +56,7 @@ function pollForStart()
     console.log(request.responseText);
     lineArray = request.responseText.split("\n");
     time = -1;
+    mapUpdatesCompressed = "";
     for(var l = 0;l< lineArray.length; l++) {
 	line = lineArray[l];
 	if(line.substr(0,8)=="Coords: ") {
@@ -66,6 +69,10 @@ function pollForStart()
         }
         else if(line.substr(0,7)=="Flags: ") {
           playerFlags = parseInt(line.substr(7));
+        }
+        else if(line.substr(0,12)=="MapUpdates: ") {
+          mapUpdatesCompressed = line.substr(12);
+          console.log("Got map updates: "+mapUpdatesCompressed);
         }
     }
     if(time==-1) {
@@ -82,7 +89,21 @@ function pollForStart()
         console.log("Turn started. x="+x+", y="+y+", time="+time);
         mode = 1;
         startFrame = frame;
-        mapUpdates = "";
+        // Parse the previous map updates...
+        if(mapUpdatesCompressed != "") {
+          console.log("Processing compressed update "+mapUpdatesCompressed);
+          updateArray = mapUpdatesCompressed.split(":");
+          for(var u in updateArray) {
+            if(updateArray[u] == "") { continue; }
+            console.log("Processing map update "+updateArray[u]);
+            bits = updateArray[u].split("x");
+            mx = parseInt(bits[0]);
+            my = parseInt(bits[1]);
+            v = parseInt(bits[2]);
+            mapArray[mx][my]=v;
+          }
+          mapUpdates = "";
+        }
       }
     }
 }
@@ -146,8 +167,6 @@ function init() {
     lineArray = request.responseText.split("\n");
     for(var l = 0;l< lineArray.length; l++) {
 	line = lineArray[l];
-        console.log("Processing response line "+line.substr(0,7)+".");
-      
         if(line.substr(0,8)=="USERID: ") {
           userID = parseInt(line.substr(8));
         }
@@ -218,7 +237,7 @@ function addToInventory(item)
 function updateMap(gx,gy,val)
 {
   mapArray[gx][gy] = val;
-  mapUpdates += "MapUpdate: "+gx+","+gy+","+val
+  mapUpdates += "MapUpdate: "+gx+","+gy+","+val+"\n";
 }
 
 function attemptCollect(x,y)
@@ -231,8 +250,6 @@ function attemptCollect(x,y)
 	for(gy = starty; gy <= endy; gy++) {
           if(mapArray[gx][gy]==2) {
             updateMap(gx,gy,0);
-            mapArray[gx][gy]=0;
-
             addToInventory(2);
           }
           if(mapArray[gx][gy]==3) {
@@ -240,7 +257,7 @@ function attemptCollect(x,y)
             playerFlags |= 0x1;           
           }
           if(mapArray[gx][gy]==4) {
-            mapArray[gx][gy]=0;
+            updateMap(gx,gy,0);
             playerFlags |= 0x2;
           }
         }
