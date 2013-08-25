@@ -19,7 +19,7 @@ var inventory;
 
 var imageNumbers = {
 space:    0,
-wall:     1,
+brick:     1,
 key:      2,
 trousers: 3,
 shirt:    4
@@ -81,7 +81,7 @@ function init() {
     y = 320;
     inventory = new Array(4);
     imageMap = new Array();
-    loadImages(['player','key','trousers','shirt']);
+    loadImages(['player','key','trousers','shirt', 'brick']);
 
     mapArray = new Array(8);
     for(var i=0;i<8;i++) {
@@ -221,10 +221,7 @@ function draw() {
   ctx.fillStyle="#ffffff";
   for(var gx = 0;gx<8;gx++) {
 	for(var gy = 0; gy< 8; gy++) {
-	    if(mapArray[gx][gy]==1) {
-              ctx.fillRect(gx*64,gy*64,64,64);
-	    }
-	    else if(mapArray[gx][gy]==0) {
+	    if(mapArray[gx][gy]==0) {
               // Does nothing
 	    }
 	    else {
