@@ -83,6 +83,7 @@ function isSolid(t)
 
 function updateStats()
 {
+  request = new XMLHttpRequest();
   request.open("GET", "api/getstats.pl?u="+userID,false); // Blocking
   data = userID;
   request.send(""+data);
@@ -209,6 +210,18 @@ function readMap(text)
 }
 
 function init() {
+  // First check for a cookie containing a user id.
+  cookie = document.cookie;
+  console.log("Cookie contains: "+cookie);
+  fields = cookie.split("; ");
+  for(var f in fields) {
+    console.log("Field in cookie:" +fields[f]);
+    if(fields[f].substr(0,7)=="userid=") {
+      userID = parseInt(fields[f].substr(7));
+      console.log("Read user ID "+userID);
+      updateStats();
+    }
+  }
     x = 320-64;
     y = 320;
     inventory = new Array(4);
@@ -237,19 +250,21 @@ function init() {
 
     readMap(originalMapData);
 
-    if(gameMode==1) {
-      request.open("GET", "api/login.pl",false); // Blocking
-    }
-    else
-    {
-      request.open("GET", "api/login_simple.pl",false); // Blocking
-    }
-    request.send(null);
-    console.log(request.responseText);
+    if(userID==0 || gameMode==1) {
 
-    // Now parse that...
-    lineArray = request.responseText.split("\n");
-    for(var l = 0;l< lineArray.length; l++) {
+      if(gameMode==1) {
+        request.open("GET", "api/login.pl",false); // Blocking
+      }
+      else
+      {
+        request.open("GET", "api/login_simple.pl",false); // Blocking
+      }
+      request.send(null);
+      console.log(request.responseText);
+      
+      // Now parse that...
+      lineArray = request.responseText.split("\n");
+      for(var l = 0;l< lineArray.length; l++) {
 	line = lineArray[l];
         if(line.substr(0,8)=="USERID: ") {
           userID = parseInt(line.substr(8));
@@ -257,6 +272,7 @@ function init() {
         if(line.substr(0,7)=="SHARD: ") {
           shardID = parseInt(line.substr(7));
         }
+      }
     }
     if(userID==0 || (shardID==0 && gameMode==1)) {
       console.log("Login failed. (userID="+userID+", shardID="+shardID+")");
@@ -266,6 +282,8 @@ function init() {
     {
       console.log("Login complete: UserID="+userID+", shard "+shardID);
     }
+    console.log("Writing userID "+userID+" to cookie");
+    document.cookie = "userid="+userID;
     mode = 4; // Default, we are waiting for our turn.
     return true;
 }
@@ -517,8 +535,12 @@ function draw() {
 function drawWaitScreen() {
   ctx.fillStyle = "#404040";
   ctx.fillRect(0,0,640,480);
-  ctx.fillStyle = "#000000";
-  ctx.fillText("Asleep?",32,32);
+}
+
+function plural(x)
+{
+  if(x!=1) { return "s"; }
+  return "";
 }
 
 function drawStats()
@@ -528,8 +550,8 @@ function drawStats()
   }
   ctx.fillStyle = "#000000";
   ctx.fillText("You have contributed to:",32,320);
-  ctx.fillText(wins+" successful days and",32,320+32);
-  ctx.fillText(deaths+" unsuccessful days",32,320+64);
+  ctx.fillText(wins+" successful day"+plural(wins)+" and",32,320+32);
+  ctx.fillText(deaths+" unsuccessful day"+plural(deaths),32,320+64);
 }
 
 function drawRepeat() {
@@ -542,7 +564,10 @@ function drawRepeat() {
 
   if(mode==0) {
     // Waiting for our turn.
+
     drawWaitScreen();
+    ctx.fillStyle = "#000000";
+    ctx.fillText("(asleep?)",32,32);
     if(frame % 50 ==0) {
       pollForStart();
     }
