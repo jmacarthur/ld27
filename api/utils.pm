@@ -36,4 +36,12 @@ sub newShard
     return $shardID;
 }
 
+sub recordShardPlayer
+{ 
+    my ($dbh, $shardID, $userID) = @_;
+    my $sth = $dbh->prepare("INSERT INTO sharduser (shardid,userid) VALUES (?,?);");
+    my $rh = $sth->execute($shardID,$userID); # May fail  due to unique constraint, that's OK
+}
+
+
 return 1;

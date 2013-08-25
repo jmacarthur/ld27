@@ -102,6 +102,8 @@ my $time = getOldShardTime($shardID);
 $time += 10;
 print "Updating shard $shardID time to $time\n";
 
+recordShardPlayer($dbh, $shardID, $userID);
+
 setInventory($shardID, $inventory);
 
 print "Processing your map updates ".$mapUpdates."\n";
@@ -115,8 +117,13 @@ setMapUpdates($shardID,$oldMapUpdates . $mapUpdates);
 my $sth = $dbh->prepare("UPDATE shard set inuse=0, playerx=?, playery=?, time=?,flags=? WHERE shardid=?");
 my $rh = $sth->execute($xpos,$ypos,$time,$flags,$shardID);
 
-if($flags & 4) {
+if($flags & 4) { # Died/lost
     my $sth = $dbh->prepare("UPDATE shard set status=3 WHERE shardid=?");
+    my $rh = $sth->execute($shardID);
+}
+
+if($flags & 8) { # Won
+    my $sth = $dbh->prepare("UPDATE shard set status=2 WHERE shardid=?");
     my $rh = $sth->execute($shardID);
 }
 

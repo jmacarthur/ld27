@@ -44,6 +44,7 @@ banknotes:13,
 coffee:14,
 ticket:15,
 ticketinspector:16,
+boat:17,
 player: 128,
 player_trousers: 129,
 player_shirt: 130,
@@ -196,7 +197,7 @@ function init() {
                 'player_trousers','player_shirt','player_dressed',
                 'car','carleft', 'assistant','teller','inspector',
                 'barista','lockeddoor', 'coins','banknotes','idcard',
-                'coffee','ticket','ticketinspector']);
+                'coffee','ticket','ticketinspector','boat']);
     
     mapArray = new Array(worldSize);
     for(var i=0;i<worldSize;i++) {
@@ -242,9 +243,7 @@ function init() {
     {
       console.log("Login complete: UserID="+userID+", shard "+shardID);
     }
-    mode = 0; // Default, we are waiting for our turn.
-    // Let's poll anyway
-    pollForStart();
+    mode = 4; // Default, we are waiting for our turn.
     return true;
 }
 
@@ -348,6 +347,10 @@ function attemptCollect(x,y)
             playerFlags |= 0x2;
             addToInventory(imageNumbers['idcard']);
           }
+          if(mapArray[gx][gy]==imageNumbers['boat']) {
+            playerFlags |= 0x8;
+            win();
+          }
         }
     }
 }
@@ -429,6 +432,13 @@ function die(reason)
   mode = 2;
 }
 
+function win()
+{
+  playerFlags |= 8;
+  sendDataToServer();
+  mode = 3;
+}
+
 function draw() {
   ctx.fillStyle = "#000000";
   ctx.fillRect(0,0,640,480);
@@ -489,13 +499,14 @@ function drawWaitScreen() {
 
 function drawRepeat() {
   frame ++;
-  if(halt) {
-    console.log("Exiting drawRepeat loop");
-    return;
+
+  if(halt && mode==1) {
+    sendDataToServer();
+    mode=4;
   }
+
   if(mode==0) {
     // Waiting for our turn.
-  
     drawWaitScreen();
     if(frame % 50 ==0) {
       pollForStart();
@@ -519,6 +530,20 @@ function drawRepeat() {
     ctx.fillStyle = "#000000";
     ctx.fillText("You failed to complete your day",32,32);
     ctx.fillText(deathReason,32,64);
+  }
+  else if(mode==3) {
+    ctx.fillStyle = "#008000";
+    ctx.fillRect(0,0,640,480);
+
+    ctx.fillStyle = "#000000";
+    ctx.fillText("You caught the boat",32,32);
+  }
+  else if(mode==4) {
+    // Title screen / not connecting
+    drawWaitScreen();
+    ctx.fillStyle = "#000000";
+    ctx.fillText("Game paused, press space to start.",32,32); 
+    ctx.fillText("Stats go here.",32,64); 
   }
   setTimeout('drawRepeat()',20);
 }
@@ -544,6 +569,10 @@ if (canvas.getContext('2d')) {
         console.log("Pressed key: "+c);
         if(c==81) {
           halt = true;
+        }
+        if(c==32) {
+          halt = false;
+          mode = 0;
         }
     };
 

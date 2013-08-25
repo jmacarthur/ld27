@@ -13,3 +13,6 @@ $sth = $dbh->prepare("CREATE TABLE shard (shardid integer primary key autoincrem
 $rv = $sth->execute() or die $sth->errstr;
 
 
+$sth = $dbh->prepare("CREATE TABLE sharduser (shardid integer, userid integer, PRIMARY KEY(shardid,userid));");
+$rv = $sth->execute() or die $sth->errstr;
+
