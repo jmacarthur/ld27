@@ -80,9 +80,12 @@ function init() {
     x = 320-64;
     y = 320;
     inventory = new Array(4);
+    for(var i=0;i<4;i++) {
+      inventory[i] = 0;
+    }
     imageMap = new Array();
     loadImages(['player','key','trousers','shirt', 'brick']);
-
+    
     mapArray = new Array(8);
     for(var i=0;i<8;i++) {
 	mapArray[i] = new Array(8);
@@ -167,9 +170,15 @@ function canMove(x,y)
     return true;
 }
 
-function addToInventory(i)
+function addToInventory(item)
 {
-  // TODO
+  for(var i=0;i<4;i++) {
+    if(inventory[i]==0) {
+      inventory[i]=item;
+      return true;
+    }
+  }
+  return false;
 }
 
 function attemptCollect(x,y)
@@ -230,6 +239,11 @@ function draw() {
 	}
     }
 
+    for(var i = 0;i<4;i++) {
+      if(inventory[i]!=0) {
+        ctx.drawImage(imageMap[inventory[i]], i*64,480);
+      }
+    }
     ctx.drawImage(imageMap[imageNumbers['player']], x,y);
 
 }
