@@ -48,6 +48,7 @@ coffee:14,
 ticket:15,
 ticketinspector:16,
 boat:17,
+cloud:18,
 player: 128,
 player_trousers: 129,
 player_shirt: 130,
@@ -233,7 +234,7 @@ function init() {
                 'player_trousers','player_shirt','player_dressed',
                 'car','carleft', 'assistant','teller','inspector',
                 'barista','lockeddoor', 'coins','banknotes','idcard',
-                'coffee','ticket','ticketinspector','boat']);
+                'coffee','ticket','ticketinspector','boat','cloud']);
     
     mapArray = new Array(worldSize);
     for(var i=0;i<worldSize;i++) {
@@ -482,7 +483,7 @@ function win()
 }
 
 function draw() {
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#404040";
   ctx.fillRect(0,0,640,480);
   
   // Draw the map
@@ -525,16 +526,24 @@ function draw() {
       }
     }
 
-    // Debug
-  ctx.fillStyle = "#0000ff";
-  ctx.fillText("Shard "+shardID,32,32);
-    
+    // Draw the timer
+    ctx.fillStyle = "#00ffff";
+    ctx.beginPath();
+    size=(frame-startFrame)*2*Math.PI/500;
+    ctx.arc(640-48,48,32,-Math.PI/2,-Math.PI/2+size);
+    ctx.strokeStyle="#00ffff";
+    ctx.lineWidth=10;
+    ctx.stroke();
+
 
 }
 
 function drawWaitScreen() {
-  ctx.fillStyle = "#404040";
+  ctx.fillStyle = "#4080c0";
   ctx.fillRect(0,0,640,480);
+  ctx.drawImage(imageMap[imageNumbers['cloud']], frame%700-64, 320);
+  ctx.drawImage(imageMap[imageNumbers['cloud']], (frame+120)%700-64, 80);
+  ctx.drawImage(imageMap[imageNumbers['cloud']], (frame+300)%700-64, 200);
 }
 
 function plural(x)
@@ -630,7 +639,6 @@ if (canvas.getContext('2d')) {
     body.onkeydown = function (event) {
 	var c = event.keyCode;
         keysDown[c] = 1;
-        console.log("Pressed key: "+c);
         if(c==81) {
           halt = true;
         }
