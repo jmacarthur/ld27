@@ -17,7 +17,7 @@ var startFrame = 0;
 var imageArray;
 var inventory;
 var playerFlags;
-
+var deathdReason = "";
 var imageNumbers = {
 space:    0,
 brick:    1,
@@ -31,6 +31,12 @@ player_trousers: 129,
 player_shirt: 130,
 player_dressed: 131,
 car: 132
+};
+
+var gameModes = {
+waiting: 0,
+playing: 1,
+dead:    2
 };
 
 function isSolid(t) 
@@ -58,6 +64,9 @@ function pollForStart()
         else if(line.substr(0,6)=="Time: ") {
           time = line.substr(6);
         }
+        else if(line.substr(0,7)=="Flags: ") {
+          playerFlags = parseInt(line.substr(7));
+        }
     }
     if(time==-1) {
       console.log("Still waiting.");
@@ -67,6 +76,7 @@ function pollForStart()
       console.log("Turn started. x="+x+", y="+y+", time="+time);
       mode = 1;
       startFrame = frame;
+      mapUpdates = "";
     }
 }
 
@@ -160,6 +170,8 @@ function sendDataToServer()
     request.open("POST", "api/sendMap.pl",false); // Blocking
     var dataString = "Coords: "+x+","+y+"\n";
     dataString += "UserID: "+userID+"\n";
+    dataString += "Flags: "+playerFlags+"\n";
+    dataString += mapUpdates;
     request.send(dataString);
     console.log("Data sent...");
     console.log(request.responseText);
@@ -196,6 +208,12 @@ function addToInventory(item)
   return false;
 }
 
+function updateMap(gx,gy,val)
+{
+  mapArray[gx][gy] = val;
+  mapUpdates += "MapUpdate: "+gx+","+gy+","+val
+}
+
 function attemptCollect(x,y)
 {
     var startx = Math.floor(x/64);
@@ -205,11 +223,13 @@ function attemptCollect(x,y)
     for(gx = startx; gx <= endx; gx++) {
 	for(gy = starty; gy <= endy; gy++) {
           if(mapArray[gx][gy]==2) {
+            updateMap(gx,gy,0);
             mapArray[gx][gy]=0;
+
             addToInventory(2);
           }
           if(mapArray[gx][gy]==3) {
-            mapArray[gx][gy]=0;
+            updateMap(gx,gy,0);
             playerFlags |= 0x1;           
           }
           if(mapArray[gx][gy]==4) {
@@ -242,7 +262,17 @@ function animate() {
     if(dy != 0 && canMove(x,y+dy*speed)) {
 	y += dy*speed;
     }
+
     attemptCollect(x,y);
+}
+
+function squaresCollide(x1,y1,x2,y2,xsize)
+{
+  var dx = Math.abs(x1-x2);
+  var dy = Math.abs(y1-y2);
+  if(dx>=xsize){ return false;}
+  if(dy>=64){ return false;}
+  return true;
 }
 
 function draw() {
@@ -275,13 +305,22 @@ function draw() {
     ctx.drawImage(imageMap[playerImageNo], x-mapOffsetX,y-mapOffsetY);
 
     // Draw cars
+    // This also check for collisions
     for(c=0;c<4;c++) {
       carx = c*256+(frame%64)*4;
       cary = 480+128;
       ctx.drawImage(imageMap[imageNumbers['car']], carx-mapOffsetX,cary-mapOffsetY);
-      carx = 640-(c*256+(frame%64)*4);
+      if(squaresCollide(carx,cary,x,y,48)) {
+        playerFlags |= 4;
+        deathReason = "Collided with a vehicle";
+      }
+      carx = 1280-(c*256+(frame%64)*4);
       cary = 480+128+64;
       ctx.drawImage(imageMap[imageNumbers['carleft']], carx-mapOffsetX,cary-mapOffsetY);
+      if(squaresCollide(carx,cary,x,y,48)) {
+        playerFlags |= 4;
+        deathReason = "Collided with a vehicle";
+      }
     }
 }
 
@@ -296,6 +335,10 @@ function drawWaitScreen() {
 function drawRepeat() {
   frame ++;
 
+  if(playerFlags & 4) {
+    mode=2;
+  }
+
   if(mode==0) {
     // Waiting for our turn.
     
@@ -304,7 +347,7 @@ function drawRepeat() {
       pollForStart();
     }
   }
-  else
+  else if(mode==1)
   {
     if(frame-startFrame >= 500) {
       sendDataToServer();
@@ -314,6 +357,10 @@ function drawRepeat() {
       animate();
       draw();
     }
+  }
+  else if(mode==2) {
+    ctx.fillStyle = "#800000";
+    ctx.fillRect(0,0,640,480);
   }
   setTimeout('drawRepeat()',20);
 }
