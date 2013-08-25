@@ -23,6 +23,19 @@ print "Hello user $userID.\n";
 
 # Find any available shard (one with status==0)
 
+sub countAvailableShards
+{
+    my $dbh = shift;
+    my $shardID;
+    my $sth = $dbh->prepare("SELECT COUNT(shardid) from shard where (status=0 or status=1) AND inuse=0");
+    my $rh = $sth->execute();
+    my @array = $sth->fetchrow_array();
+    if(@array>0) {
+        return $array[0];
+    }
+    return -1;
+}
+
 sub findShard
 {
     my $shardID;
@@ -44,7 +57,7 @@ sub forkShard
     my @array = $sth->fetchrow_array();
     my $oldShardID = shift @array;
     if(@array>0) {
-        $sth = $dbh->prepare("INSERT into shard ($fields) VALUES (?,?,?,?,?,?,?);");
+        $sth = $dbh->prepare("INSERT into shard (inuse,$fields) VALUES (0,?,?,?,?,?,?,?);");
         $rh = $sth->execute(@array);
         my $shardID = $dbh->func('last_insert_rowid');
         return $shardID;
@@ -73,6 +86,23 @@ sub sendStartupInfo
 }
 
 touchTimeStamp($dbh,$userID);
+my $shards = countAvailableShards($dbh);
+if($shards < 5) {
+    my $iters = 5-$shards;
+    for(;$iters>0;$iters--) {
+        print "I need to create a shard.\n";
+        if(rand(1)<0.25) {
+            # New shard.
+            $shardID = newShard($dbh);
+            print "Creating a brand new shard ($shardID)\n";
+        } else {
+            # Forked shard.
+            $shardID = forkShard($dbh);
+            print "Forked a shard ($shardID)\n";
+        }
+    }
+}
+
 my $shardID = findShard();
 print "findShard() found shard $shardID for us\n";
 if($shardID == -1) {

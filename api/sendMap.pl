@@ -42,11 +42,15 @@ for my $l(@lines) {
     }
     elsif($l=~/MapUpdate: (\d+),(\d+),(\d+)/) {
         $mapUpdates .= ":$1x$2x$3";
+        if($1 eq"1" && $2 eq "14" && $inventory !~ /11/) {
+            warn "An update to shard $shardID has lost the ID card!\n";
+        }
     }
     elsif($l=~/Inventory: ([0-9,]+)/) {
         $inventory = $1;
     }
 }
+
 
 sub getUserShard
 {

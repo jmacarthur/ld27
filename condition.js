@@ -149,8 +149,8 @@ function pollForStart()
             v = parseInt(bits[2]);
             mapArray[mx][my]=v;
           }
-          mapUpdates = "";
         }
+        mapUpdates = "";
       }
     }
 }
@@ -406,6 +406,12 @@ function attemptDragDrop(gx,gy,thing)
   }
 }
 
+function configureOffset()
+{
+  if(x>320) { mapOffsetX = x-320; } else { mapOffsetX = 0; }
+  if(y>240) { mapOffsetY = y-240; } else { mapOffsetY = 0; }
+}
+
 function squaresCollide(x1,y1,x2,y2,xsize)
 {
   var dx = Math.abs(x1-x2);
@@ -429,8 +435,7 @@ function draw() {
   
   // Draw the map
   ctx.fillStyle="#ffffff";
-  if(x>320) { mapOffsetX = x-320; }
-  if(y>240) { mapOffsetY = y-240; }
+  configureOffset();
   for(var gx = 0;gx<worldSize;gx++) {
     for(var gy = 0; gy< worldSize; gy++) {
       if(mapArray[gx][gy]==0) {
@@ -469,7 +474,7 @@ function draw() {
     }
 
     // Debug
-  ctx.fillStyle = "#000000";
+  ctx.fillStyle = "#0000ff";
   ctx.fillText("Shard "+shardID,32,32);
     
 
