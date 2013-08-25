@@ -97,6 +97,8 @@ if($shardID==-1) {
     $shardID = getUserShard($userID);
 }
 
+touchShardTimeStamp($dbh,$shardID);
+
 print "Shard ID of user $userID is $shardID\n";
 my $time = getOldShardTime($shardID);
 $time += 10;

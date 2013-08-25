@@ -15,6 +15,13 @@ sub touchTimeStamp
     my $rh = $sth->execute($userID);
 }
 
+sub touchShardTimeStamp
+{
+    my ($dbh,$shardID)=@_;
+    my $sth = $dbh->prepare("UPDATE shard SET lastused=datetime('now') WHERE shardid=?");
+    my $rh = $sth->execute($shardID);
+}
+
 sub getShardStatus
 {
     my ($dbh,$shardID) = @_;
