@@ -483,26 +483,34 @@ function win()
 }
 
 function draw() {
-  ctx.fillStyle = "#404040";
-  ctx.fillRect(0,0,640,480);
-  
-  // Draw the map
-  ctx.fillStyle="#ffffff";
-  configureOffset();
-  for(var gx = 0;gx<worldSize;gx++) {
-    for(var gy = 0; gy< worldSize; gy++) {
-      if(mapArray[gx][gy]==0) {
-        // Does nothing
-      }
-      else {
-        ctx.drawImage(imageMap[mapArray[gx][gy]], gx*64-mapOffsetX,gy*64-mapOffsetY);
-      }
+    ctx.fillStyle = "#404040";
+    ctx.fillRect(0,0,640,480);
+    
+    // Draw the map
+    ctx.fillStyle="#ffffff";
+    configureOffset();
+    startx = Math.max(Math.floor((mapOffsetX)/64),0);
+    starty = Math.max(Math.floor((mapOffsetY)/64),0);
+    endx = Math.min(worldSize,startx+11);
+    endy = Math.min(worldSize,starty+9);
+    for(var gx = startx;gx<endx;gx++) {
+	for(var gy = starty; gy<endy; gy++) {
+	    if(mapArray[gx][gy]==0) {
+		// Does nothing
+	    }
+	    else {
+		if(gx<0 || gy<0 || gx>=worldSize || gy>=worldSize) {
+		    console.log("Error, outside boundary: "+gx+","+gy);
+		    console.log("offset = "+mapOffsetX+","+mapOffsetY);
+		}
+		ctx.drawImage(imageMap[mapArray[gx][gy]], gx*64-mapOffsetX,gy*64-mapOffsetY);
+	    }
+	}
     }
-  }
-
+    
     playerImageNo = imageNumbers['player']+(playerFlags & 3);
     ctx.drawImage(imageMap[playerImageNo], x-mapOffsetX,y-mapOffsetY);
-
+    
     // Draw cars
     // This also check for collisions
     for(c=0;c<4;c++) {
