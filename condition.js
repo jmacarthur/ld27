@@ -130,7 +130,7 @@ function pollForStart()
           y = parseInt(coordArray[1]);
         }
         else if(line.substr(0,6)=="Time: ") {
-          time = line.substr(6);
+            time = parseInt(line.substr(6));
         }
         else if(line.substr(0,7)=="Flags: ") {
           playerFlags = parseInt(line.substr(7));
@@ -543,7 +543,18 @@ function draw() {
     ctx.lineWidth=10;
     ctx.stroke();
 
+    // Draw the clock...
+    minutes = Math.floor(time+((frame-startFrame)/50));
+    hours = 6+Math.floor(minutes/60);
+    minutes = minutes%60;
+    if(minutes<10) {minutes="0"+minutes;}
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(28,0,128,40);
+    ctx.fillStyle = "#ff0000";    
+    ctx.fillText(hours+":"+minutes+"pm",32,32);
 
+    
+    
 }
 
 function drawWaitScreen() {
@@ -592,7 +603,12 @@ function drawRepeat() {
   else if(mode==1)
   {
     if(frame-startFrame >= 500) {
-      sendDataToServer();
+	if(time >= 50) {
+	    die("The boat left without you.");
+	}
+	else {
+	    sendDataToServer();
+	}
     }
     else
     {
