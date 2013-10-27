@@ -1,5 +1,5 @@
 #!/bin/sh
-for i in *.svg; do convert -background transparent $i -resize 64x64 `basename -s .svg $i`.png
+for i in *.svg; do convert -background transparent $i -resize 64x64 `echo $i | sed -e 's/.svg//'`.png
 done
 cp car.png carleft.png
 mogrify -flop carleft.png
